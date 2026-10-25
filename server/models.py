@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import CheckConstraint, UniqueConstraint
 from sqlalchemy.orm import validates
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, validate, validates as validates_field
 from marshmallow import validates_schema, ValidationError
 from datetime import date
 
@@ -142,12 +142,23 @@ class ExerciseSchema(Schema):
     category = fields.Str(required=True)
     equipment_needed = fields.Bool(load_default=False)
 
+    @validates_field('name')
+    def validate_name_not_blank(self, value, **kwargs):
+        if not value.strip():
+            raise ValidationError('Name cannot be blank.')
+
+    @validates_field('category')
+    def validate_category_not_blank(self, value, **kwargs):
+        if not value.strip():
+            raise ValidationError('Category cannot be blank.')
 
 class WorkoutSchema(Schema):
     id = fields.Int(dump_only=True)
     date = fields.Date(required=True)
     duration_minutes = fields.Int(required=True)
     notes = fields.Str(load_default=None, allow_none=True)
+
+
 
 
 class WorkoutExerciseSchema(Schema):
@@ -157,6 +168,12 @@ class WorkoutExerciseSchema(Schema):
     reps = fields.Int(load_default=None, allow_none=True)
     sets = fields.Int(load_default=None, allow_none=True)
     duration_seconds = fields.Int(load_default=None, allow_none=True)
+
+    @validates_schema
+    def require_a_measurement(self, data, **kwargs):
+        if all(data.get(k) is None for k in ('reps', 'sets', 'duration_seconds')):
+            raise ValidationError(
+                'Provide at least one of reps, sets, or duration_seconds.')
 
 
 # Output-only schemas with nested data
