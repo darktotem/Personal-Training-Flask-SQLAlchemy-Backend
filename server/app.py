@@ -26,7 +26,10 @@ def error(message, status):
 # Define Routes here
 @app.route('/workouts', methods=['GET'])
 def get_workouts():
-    return make_response({}, 200)
+    workout = db.session.get(Workout, id)
+    if not workout:
+        return error('Workout not found.', 404)
+    return make_response(jsonify(workout_detail_schema.dump(workout)), 200)
 
 
 @app.route('/workouts/<int:id>', methods=['GET'])
