@@ -7,16 +7,22 @@ db = SQLAlchemy()
 
 # Define Models here
 class Exercise(db.Model):
+    # Exercise entity representing distinct fitness movements.
     __tablename__ = 'exercises'
 
+    #Primary key for the Exercise model
     id = db.Column(db.Integer, primary_key=True)
+
+    #Attributes for the Exercise model and their constraints
     name = db.Column(db.String(100), nullable=False, unique=True)
     category = db.Column(db.String(50), nullable=False)
     equipment_needed = db.Column(db.Boolean, nullable=False, default=False)
 
+    #Relationships
     workout_exercises = db.relationship(
         'WorkoutExercise', back_populates='exercise',
         cascade='all, delete-orphan')
+    
     workouts = db.relationship(
         'Workout', secondary='workout_exercises', back_populates='exercises',
         viewonly=True)
@@ -28,7 +34,10 @@ class Exercise(db.Model):
 class Workout(db.Model):
     __tablename__ = 'workouts'
 
+    #Primary key for the Workout model
     id = db.Column(db.Integer, primary_key=True)
+
+    #Attributes for the Workout model and their constraints
     date = db.Column(db.Date, nullable=False)
     duration_minutes = db.Column(db.Integer, nullable=False)
     notes = db.Column(db.Text)
@@ -47,7 +56,10 @@ class Workout(db.Model):
 class WorkoutExercise(db.Model):
     __tablename__ = 'workout_exercises'
 
+    #Primary key for the WorkoutExercise model
     id = db.Column(db.Integer, primary_key=True)
+
+    #Attributes for the WorkoutExercise model and their constraints
     workout_id = db.Column(db.Integer, db.ForeignKey('workouts.id'), nullable=False)
     exercise_id = db.Column(db.Integer, db.ForeignKey('exercises.id'), nullable=False)
     reps = db.Column(db.Integer)
