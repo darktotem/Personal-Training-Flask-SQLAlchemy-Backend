@@ -134,3 +134,62 @@ class WorkoutExercise(db.Model):
 
     def __repr__(self):
         return f'<WorkoutExercise w={self.workout_id} e={self.exercise_id}>'
+
+    #Schema
+class ExerciseSchema(Schema):
+    id = fields.Int(dump_only=True)
+    name = fields.Str(required=True)
+    category = fields.Str(required=True)
+    equipment_needed = fields.Bool(load_default=False)
+
+    @validates_field('name')
+    def validate_name_not_blank(self, value, **kwargs):
+        if not value.strip():
+            raise ValidationError('Name cannot be blank.')
+
+    @validates_field('category')
+    def validate_category_not_blank(self, value, **kwargs):
+        if not value.strip():
+            raise ValidationError('Category cannot be blank.')
+
+class WorkoutSchema(Schema):
+    id = fields.Int(dump_only=True)
+    date = fields.Date(required=True)
+    duration_minutes = fields.Int(required=True)
+    notes = fields.Str(load_default=None, allow_none=True)
+
+
+
+
+class WorkoutExerciseSchema(Schema):
+    id = fields.Int(dump_only=True)
+    workout_id = fields.Int(dump_only=True)
+    exercise_id = fields.Int(dump_only=True)
+    reps = fields.Int(load_default=None, allow_none=True)
+    sets = fields.Int(load_default=None, allow_none=True)
+    duration_seconds = fields.Int(load_default=None, allow_none=True)
+
+    @validates_schema
+    def require_a_measurement(self, data, **kwargs):
+        if all(data.get(k) is None for k in ('reps', 'sets', 'duration_seconds')):
+            raise ValidationError(
+                'Provide at least one of reps, sets, or duration_seconds.')
+
+
+# Output-only schemas with nested data
+class WorkoutExerciseDetailSchema(WorkoutExerciseSchema):
+    exercise = fields.Nested(ExerciseSchema, dump_only=True)
+
+
+class WorkoutExerciseForExerciseSchema(WorkoutExerciseSchema):
+    workout = fields.Nested(WorkoutSchema, dump_only=True)
+
+
+class WorkoutDetailSchema(WorkoutSchema):
+    workout_exercises = fields.List(fields.Nested(WorkoutExerciseDetailSchema),
+                                    dump_only=True)
+
+
+class ExerciseDetailSchema(ExerciseSchema):
+    workout_exercises = fields.List(fields.Nested(WorkoutExerciseForExerciseSchema),
+                                    dump_only=True)
