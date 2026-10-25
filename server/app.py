@@ -1,7 +1,5 @@
-from flask import Flask, make_response, request, jsonify
+from flask import Flask, make_response
 from flask_migrate import Migrate
-from marshmallow import ValidationError
-from sqlalchemy.exc import IntegrityError
 
 from models import *
 
