@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import CheckConstraint, UniqueConstraint
 from sqlalchemy.orm import validates
-from marshmallow import Schema, fields, validate, validates as validates_field
+from marshmallow import Schema, fields
 from marshmallow import validates_schema, ValidationError
 from datetime import date
 
@@ -134,3 +134,45 @@ class WorkoutExercise(db.Model):
 
     def __repr__(self):
         return f'<WorkoutExercise w={self.workout_id} e={self.exercise_id}>'
+
+    #Schema
+class ExerciseSchema(Schema):
+    id = fields.Int(dump_only=True)
+    name = fields.Str(required=True)
+    category = fields.Str(required=True)
+    equipment_needed = fields.Bool(load_default=False)
+
+
+class WorkoutSchema(Schema):
+    id = fields.Int(dump_only=True)
+    date = fields.Date(required=True)
+    duration_minutes = fields.Int(required=True)
+    notes = fields.Str(load_default=None, allow_none=True)
+
+
+class WorkoutExerciseSchema(Schema):
+    id = fields.Int(dump_only=True)
+    workout_id = fields.Int(dump_only=True)
+    exercise_id = fields.Int(dump_only=True)
+    reps = fields.Int(load_default=None, allow_none=True)
+    sets = fields.Int(load_default=None, allow_none=True)
+    duration_seconds = fields.Int(load_default=None, allow_none=True)
+
+
+# Output-only schemas with nested data
+class WorkoutExerciseDetailSchema(WorkoutExerciseSchema):
+    exercise = fields.Nested(ExerciseSchema, dump_only=True)
+
+
+class WorkoutExerciseForExerciseSchema(WorkoutExerciseSchema):
+    workout = fields.Nested(WorkoutSchema, dump_only=True)
+
+
+class WorkoutDetailSchema(WorkoutSchema):
+    workout_exercises = fields.List(fields.Nested(WorkoutExerciseDetailSchema),
+                                    dump_only=True)
+
+
+class ExerciseDetailSchema(ExerciseSchema):
+    workout_exercises = fields.List(fields.Nested(WorkoutExerciseForExerciseSchema),
+                                    dump_only=True)
