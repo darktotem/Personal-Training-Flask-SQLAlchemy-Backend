@@ -26,20 +26,32 @@ def error(message, status):
 # Define Routes here
 @app.route('/workouts', methods=['GET'])
 def get_workouts():
+   workouts = Workout.query.order_by(Workout.date.desc()).all()
+   return make_response(jsonify(workouts_schema.dump(workouts)), 200)
+
+@app.route('/workouts/<int:id>', methods=['GET'])
+def get_workout(id):
     workout = db.session.get(Workout, id)
     if not workout:
         return error('Workout not found.', 404)
     return make_response(jsonify(workout_detail_schema.dump(workout)), 200)
 
-
-@app.route('/workouts/<int:id>', methods=['GET'])
-def get_workout(id):
-    return make_response({}, 200)
-
-
 @app.route('/workouts', methods=['POST'])
-def create_workout():
-    return make_response({}, 201)
+def create_workout(id):
+   try:
+        data = workout_schema.load(request.get_json(silent=True) or {})
+    except ValidationError as e:
+        return error(e.messages, 400)
+
+    try:
+        workout = Workout(**data)
+        db.session.add(workout)
+        db.session.commit()
+    except (ValueError, IntegrityError) as e:
+        db.session.rollback()
+        return error(str(e), 400)
+
+    return make_response(jsonify(workout_schema.dump(workout)), 201)
 
 
 @app.route('/workouts/<int:id>', methods=['DELETE'])
