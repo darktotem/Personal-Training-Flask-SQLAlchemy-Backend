@@ -155,9 +155,10 @@ class ExerciseSchema(Schema):
 class WorkoutSchema(Schema):
     id = fields.Int(dump_only=True)
     date = fields.Date(required=True)
-    duration_minutes = fields.Int(required=True)
-    notes = fields.Str(load_default=None, allow_none=True)
-
+    duration_minutes = fields.Int(required=True, strict=True,
+                                  validate=validate.Range(min=1, max=1440))
+    notes = fields.Str(load_default=None, allow_none=True,
+                       validate=validate.Length(max=1000))
 
 
 
