@@ -1,4 +1,6 @@
-from flask import Flask, jsonify, make_response
+from sqlite3 import IntegrityError
+
+from flask import Flask, jsonify, make_response, request
 from flask_migrate import Migrate
 
 from models import *
@@ -37,8 +39,8 @@ def get_workout(id):
     return make_response(jsonify(workout_detail_schema.dump(workout)), 200)
 
 @app.route('/workouts', methods=['POST'])
-def create_workout(id):
-   try:
+def create_workout():
+    try:
         data = workout_schema.load(request.get_json(silent=True) or {})
     except ValidationError as e:
         return error(e.messages, 400)
