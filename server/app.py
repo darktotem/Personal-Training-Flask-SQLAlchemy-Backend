@@ -58,22 +58,47 @@ def create_workout():
 
 @app.route('/workouts/<int:id>', methods=['DELETE'])
 def delete_workout(id):
+    workout = db.session.get(Workout, id)
+    if not workout:
+        return error('Workout not found.', 404)
+    db.session.delete(workout)  # cascades to WorkoutExercises
+    db.session.commit()
     return make_response('', 204)
 
 
 @app.route('/exercises', methods=['GET'])
 def get_exercises():
-    return make_response({}, 200)
+    exercises = Exercise.query.order_by(Exercise.name).all()
+    return make_response(jsonify(exercises_schema.dump(exercises)), 200)
 
 
 @app.route('/exercises/<int:id>', methods=['GET'])
 def get_exercise(id):
-    return make_response({}, 200)
+    exercise = db.session.get(Exercise, id)
+    if not exercise:
+        return error('Exercise not found.', 404)
+    return make_response(jsonify(exercise_detail_schema.dump(exercise)), 200)
 
 
 @app.route('/exercises', methods=['POST'])
 def create_exercise():
-    return make_response({}, 201)
+    try:
+        data = exercise_schema.load(request.get_json(silent=True) or {})
+    except ValidationError as e:
+        return error(e.messages, 400)
+
+    try:
+        exercise = Exercise(**data)
+        db.session.add(exercise)
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        return error('An exercise with that name already exists.', 400)
+    except ValueError as e:
+        db.session.rollback()
+        return error(str(e), 400)
+
+    return make_response(jsonify(exercise_schema.dump(exercise)), 201)
 
 
 @app.route('/exercises/<int:id>', methods=['DELETE'])
