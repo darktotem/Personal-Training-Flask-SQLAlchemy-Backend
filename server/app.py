@@ -103,8 +103,12 @@ def create_exercise():
 
 @app.route('/exercises/<int:id>', methods=['DELETE'])
 def delete_exercise(id):
+    exercise = db.session.get(Exercise, id)
+    if not exercise:
+        return error('Exercise not found.', 404)
+    db.session.delete(exercise)  # cascades to WorkoutExercises
+    db.session.commit()
     return make_response('', 204)
-
 
 @app.route('/workouts/<int:workout_id>/exercises/<int:exercise_id>/workout_exercises',
            methods=['POST'])
