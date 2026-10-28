@@ -54,42 +54,6 @@ python app.py
 
 The API runs at `http://localhost:5555`. (`flask run --port 5555` also works.)
 
-## Endpoints
-
-| Method | Path | Description |
-| --- | --- | --- |
-| GET | `/workouts` | List all workouts |
-| GET | `/workouts/<id>` | Show one workout with its exercises, including reps, sets and duration |
-| POST | `/workouts` | Create a workout |
-| DELETE | `/workouts/<id>` | Delete a workout and its workout-exercise rows |
-| GET | `/exercises` | List all exercises |
-| GET | `/exercises/<id>` | Show one exercise with the workouts it appears in |
-| POST | `/exercises` | Create an exercise |
-| DELETE | `/exercises/<id>` | Delete an exercise and its workout-exercise rows |
-| POST | `/workouts/<workout_id>/exercises/<exercise_id>/workout_exercises` | Add an exercise to a workout with reps, sets and/or duration |
-
-### Request bodies
-
-Create a workout:
-```json
-{"date": "2026-10-27", "duration_minutes": 45, "notes": "Leg day"}
-```
-
-Create an exercise:
-```json
-{"name": "Lunge", "category": "strength", "equipment_needed": false}
-```
-
-Add an exercise to a workout (at least one of the three fields is required):
-```json
-{"reps": 10, "sets": 3, "duration_seconds": 60}
-```
-
-### Responses
-
-- `200` success (GET), `201` created (POST), `204` deleted (DELETE)
-- `400` validation error, returned as `{"errors": ...}`
-- `404` workout or exercise not found
 
 ## Validations
 
@@ -98,8 +62,6 @@ Add an exercise to a workout (at least one of the three fields is required):
 - **Schema validations:** required fields, length and range checks, strict integer types, blank-value checks, and a rule requiring at least one of reps, sets or duration_seconds.
 
 
-```bash
-pytest -v
-```
 
-Tests run against an in-memory database, so your seeded data is not affected.
+
+ngrok =  https://c610-102-211-144-250.ngrok-free.app
